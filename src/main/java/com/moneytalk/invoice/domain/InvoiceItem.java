@@ -1,18 +1,18 @@
 package com.moneytalk.invoice.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Getter
@@ -23,15 +23,27 @@ class InvoiceItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private BigDecimal price;
-    private long amount;
+    @Column(nullable = false)
+    private BigDecimal taxPercentage;
+    @Column(nullable = false)
+    private BigDecimal amount;
+    private BigDecimal taxTotalCost;
+    private BigDecimal itemTotalCost;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "invoice_id")
-//    private Invoice invoice;
 
-    // ... other fields like name, quantity, price, etc.
-
-    // ... other methods like getters, setters, and calculations
+    @PrePersist
+    public void calculateCosts() {
+        if (price != null && taxPercentage != null) {
+            BigDecimal taxAmount = price.multiply(taxPercentage.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
+            taxTotalCost = taxAmount;
+            itemTotalCost = price.add(taxAmount);
+        } else {
+            taxTotalCost = BigDecimal.ZERO;
+            itemTotalCost = price == null ? BigDecimal.ZERO : price;
+        }
+    }
 }

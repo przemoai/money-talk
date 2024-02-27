@@ -4,7 +4,6 @@ import com.moneytalk.invoice.dto.InvoiceDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public class InvoiceFacade {
         return invoiceMapper.toDto(invoiceRepository.findAll());
     }
 
-    public Long insertInvoice(InvoiceDto invoiceDto) {
+    public Long upsertInvoice(InvoiceDto invoiceDto) {
         Invoice invoice = invoiceMapper.toEntity(invoiceDto);
         invoiceRepository.save(invoice);
         return invoice.getId();
